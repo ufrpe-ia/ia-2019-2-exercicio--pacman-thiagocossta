@@ -86,8 +86,24 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Stack()
+    visitedList = []
 
+    #add the start point to queue
+    fringe.push((problem.getStartState(),[],0))
+    (state,toDirection,toCost) = fringe.pop()
+    #add to visited points
+    visitedList.append(state)
+
+    while not problem.isGoalState(state): 
+        successors = problem.getSuccessors(state) #get next points
+        for son in successors:
+            if (not son[0] in visitedList) or (problem.isGoalState(son[0])): #if n visited add to stack
+                fringe.push((son[0],toDirection + [son[1]],toCost + son[2]))
+                visitedList.append(son[0]) 
+        (state,toDirection,toCost) = fringe.pop()
+
+    return toDirection
 
 def breadthFirstSearch(problem):
     """
@@ -95,15 +111,57 @@ def breadthFirstSearch(problem):
     DICA: Utilizar util.PriorityQueue
     *** YOUR CODE HERE ***
     """
-    util.raiseNotDefined()
+    fringe = util.Queue()
+    visitedList = []
 
+    fringe.push((problem.getStartState(),[],0))
+    (state,toDirection,toCost) = fringe.pop()
+    #add to visited points list
+    visitedList.append(state)
+
+    while not problem.isGoalState(state): #while n we search the path
+        successors = problem.getSuccessors(state) #get next points
+        for son in successors:
+            if not son[0] in visitedList: 
+                fringe.push((son[0],toDirection + [son[1]],toCost + son[2]))
+                visitedList.append(son[0]) # add to visited points
+        (state,toDirection,toCost) = fringe.pop()
+
+    return toDirection
     
 def uniformCostSearch(problem):
     """Search the node of least total cost first.
     *** YOUR CODE HERE ***
     """
-    util.raiseNotDefined()
+    from game import Directions
 
+    fringe = util.PriorityQueue()
+    visitedList = []
+
+    #add start point to queue
+    fringe.push((problem.getStartState(),[],0),0) # push starting point with priority num of 0
+    (state,toDirection,toCost) = fringe.pop()
+    #add to visited points list
+    visitedList.append((state,toCost))
+
+    while not problem.isGoalState(state): # while n we search the path
+        successors = problem.getSuccessors(state) #get next point
+        for son in successors:
+            visitedExist = False
+            total_cost = toCost + son[2]
+            for (visitedState,visitedToCost) in visitedList:
+                if (son[0] == visitedState) and (total_cost >= visitedToCost):
+                    visitedExist = True # recognized visited point
+                    break
+
+            if not visitedExist:
+                 # push point with num of priority
+                fringe.push((son[0],toDirection + [son[1]],toCost + son[2]),toCost + son[2])
+                visitedList.append((son[0],toCost + son[2]))  # add to visited points
+
+        (state,toDirection,toCost) = fringe.pop()
+
+    return toDirection
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -114,7 +172,33 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    visitedList = []
+
+    fringe.push((problem.getStartState(),[],0),0 + heuristic(problem.getStartState(),problem)) # push starting point with priority num of 0
+    (state,toDirection,toCost) = fringe.pop()
+    # add the point to visited list
+    visitedList.append((state,toCost + heuristic(problem.getStartState(),problem)))
+
+    while not problem.isGoalState(state): # while n we search the path
+        successors = problem.getSuccessors(state) # getting next points
+        for son in successors:
+            visitedExist = False
+            total_cost = toCost + son[2]
+            for (visitedState,visitedToCost) in visitedList:
+                # if n visited or cost < last
+                if (son[0] == visitedState) and (total_cost >= visitedToCost):
+                    visitedExist = True
+                    break
+
+            if not visitedExist:
+                # push point with num of priority
+                fringe.push((son[0],toDirection + [son[1]],toCost + son[2]),toCost + son[2] + heuristic(son[0],problem))
+                visitedList.append((son[0],toCost + son[2])) # add to visited points
+
+        (state,toDirection,toCost) = fringe.pop()
+
+    return toDirection
 
 
 # Abbreviations
